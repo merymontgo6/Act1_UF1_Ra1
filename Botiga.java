@@ -1,8 +1,7 @@
 import java.io.BufferedReader;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.*;
@@ -11,6 +10,7 @@ import java.util.ArrayList;
 
 public class Botiga {
     private static final ArrayList<Client> encarrecs = new ArrayList<>();
+    private static File dir = new File ("C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1");
 
     public static void main(String[] args) throws Exception {
         
@@ -25,9 +25,6 @@ public class Botiga {
             switch (opcio) {
                     case 1: 
                         infoClient(reader);
-                        if (opcio == 1) {
-                            fitxerAlbara();
-                        }
                         break;
                     case 2: 
                         mostrarEncarrecs();
@@ -42,6 +39,7 @@ public class Botiga {
             }
         }
     }
+
     public static Integer infoClient(BufferedReader reader) throws IOException {
         System.out.println("Introdueix el nom del client:");
         String nomClient = reader.readLine();
@@ -61,6 +59,20 @@ public class Botiga {
 
         System.out.println("Com es vol generar el fitxer?\n1. Generar un fitxer de text amb format albarà\n2. Generar un fitxer de text csv\n3. Generar un fitxer binari");
         int opcio = Integer.parseInt(reader.readLine());
+        switch (opcio) {
+            case 1:
+                generarFitxerAlbara(nouClient);
+                break;
+            case 2:
+                // generarFitxerCSV(nouClient);
+                break;
+            case 3:
+                // generarFitxerBinari(nouClient);
+                break;
+            default:
+                System.out.println("Opció no vàlida. Si us plau, tria una opció correcta.");
+                break;
+        }
         return opcio;
     }
 
@@ -88,16 +100,33 @@ public class Botiga {
         return articles;
     }
 
-    public static void fitxerAlbara(){
-        String lloc = "C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1";
-        try {
-            FileOutputStream fit1 = new FileOutputStream(lloc);
-            DataOutput str1 = new DataOutputStream(fit1);
-
+    public static void generarFitxerAlbara(Client client)  throws IOException {
+        File f1 = new File (dir, "albara.txt");
+        f1.createNewFile();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(f1))) {
+            writer.write("Nom del client: " + client.getNomClient());
+            writer.newLine();
+            writer.write("Telefon del client: " + client.getTelClient());
+            writer.newLine();
             
-        } catch (FileNotFoundException e) {
-            System.out.println("El fitxer no existeix");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            writer.write("Data de l'encarrec: " + client.getDataEncarrec().format(formatter));
+            writer.newLine();
+            writer.newLine();
+            
+            writer.write("Quantitat\tUnitats\t\tArticle");
+            writer.newLine();
+            writer.write("=============== ========== ===============");
+            writer.newLine();
+
+            for (Article article : client.getArticles()) {
+                writer.write(String.format("%-15.1f %-10s %-15s", (float) article.getQuantitat(), article.getUnitats(), article.getNomArticle()));
+                writer.newLine();
+            }
+            writer.newLine();
+            System.out.println("Albarà generat correctament.");
         } catch (IOException e) {
+            System.out.println("Error al generar l'albarà.");
             e.printStackTrace();
         }
     }
@@ -111,4 +140,5 @@ public class Botiga {
             }
         }
     }
+
 }

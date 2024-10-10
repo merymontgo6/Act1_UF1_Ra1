@@ -45,17 +45,8 @@ public class Client {
     public void setArticles(ArrayList articles) {
         this.articles = articles;
     }
-
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Nom del client: ").append(nomClient).append("\n");
-        sb.append("Telèfon: ").append(telClient).append("\n");
-        sb.append("Data de lliurament: ").append(dataEncarrec).append("\n");
-        sb.append("Articles:\n");
-        for (Article article : articles) {
-            sb.append(article.toString()).append("\n");
-        }
-        return sb.toString();
+    return "Nom del client: " + nomClient + ", Telèfon: " + telClient + ", Data de lliurament: " + dataEncarrec;
     }
 }
