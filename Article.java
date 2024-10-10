@@ -3,7 +3,6 @@ public class Article {
     private int quantitat;
     private String unitats;
 
-    // Constructor
     public Article(String nomArticle, int quantitat, String unitats) {
         this.nomArticle = nomArticle;
         this.quantitat = quantitat;
@@ -22,8 +21,24 @@ public class Article {
         return unitats;
     }
 
+    public void setNomArticle(String nomArticle) {
+        this.nomArticle = nomArticle;
+    }
+
+    public void setQuantitat(int quantitat) {
+        this.quantitat = quantitat;
+    }
+
+    public void setUnitats(String unitats) {
+        this.unitats = unitats;
+    }
+
     @Override
     public String toString() {
         return "Article: " + nomArticle + ", Quantitat: " + quantitat + " " + unitats;
+    }
+    
+    public String toCSV() {
+        return nomArticle + ";" + quantitat + ";" + unitats + ";";
     }
 }

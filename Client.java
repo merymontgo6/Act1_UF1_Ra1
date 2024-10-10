@@ -7,7 +7,6 @@ public class Client {
     private LocalDate dataEncarrec;
     private ArrayList<Article> articles;
 
-    // Constructor
     public Client(String nomClient, Integer telClient, LocalDate dataEncarrec, ArrayList<Article> articles) {
         this.nomClient = nomClient;
         this.telClient = telClient;
@@ -15,7 +14,6 @@ public class Client {
         this.articles = articles;
     }
 
-    // Getters
     public String getNomClient() {
         return nomClient;
     }
@@ -32,7 +30,22 @@ public class Client {
         return articles;
     }
 
-    //Mètode per mostrar l'encàrrec
+    public void setNomArticle(String nomClient) {
+        this.nomClient = nomClient;
+    }
+
+    public void settelClient(Integer telClient) {
+        this.telClient = telClient;
+    }
+
+    public void setDataEncarrec(LocalDate dataEncarrec) {
+        this.dataEncarrec = dataEncarrec;
+    }
+
+    public void setArticles(ArrayList articles) {
+        this.articles = articles;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
