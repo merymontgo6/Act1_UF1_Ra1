@@ -1,9 +1,12 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,8 +15,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class Botiga {
-    private static ArrayList<Client> encarrecs = new ArrayList<>();
-    private static final File dir = new File ("C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1");
+    private static ArrayList<Client> encarrecs = new ArrayList<>(); // Llista de clients amb els seus encàrrecs
+    private static File dir = new File ("C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1\\fitxers"); //path
 
     public static void main(String[] args) throws Exception {
         
@@ -24,15 +27,15 @@ public class Botiga {
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             try{
                
-                String oo = reader.readLine();
-                int opcio = Integer.parseInt(oo);
+                String option = reader.readLine();
+                int opcio = Integer.parseInt(option);
 
                 switch (opcio) {
                     case 1: 
                         infoClient(reader);
                         break;
                     case 2: 
-                        mostrarEncarrecs();
+                        mostrarEncarrecs(reader);
                         break;
                     case 3: 
                         sortir = true;
@@ -47,7 +50,8 @@ public class Botiga {
         }
     }
 
-    public static Integer infoClient(BufferedReader reader) throws IOException {
+    public static Integer infoClient(BufferedReader reader) throws IOException { 
+        // s'introdueix tota la informació del client
         System.out.println("Introdueix el nom del client:");
         String nomClient = reader.readLine();
         System.out.println("Introdueix el telèfon del client:");
@@ -58,7 +62,7 @@ public class Botiga {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate dataLliurament = LocalDate.parse(dataEncarrec, formatter);
         
-        ArrayList<Article> articles = demanarArticles(reader);
+        ArrayList<Article> articles = demanarArticles(reader); //array per afegir articles
 
         Client nouClient = new Client(nomClient, telClient, dataLliurament, articles);
         encarrecs.add(nouClient);
@@ -85,7 +89,7 @@ public class Botiga {
 
     public static ArrayList<Article> demanarArticles(BufferedReader reader) throws IOException {
         ArrayList<Article> articles = new ArrayList<>();
-        boolean afegirMesArticles = true;
+        boolean afegirMesArticles = true; //bool per saber si l'usuari vol afegir més articles
 
         while (afegirMesArticles) {
             System.out.println("Introdueix el nom de l'article:");
@@ -108,8 +112,10 @@ public class Botiga {
 
     public static void generarFitxerAlbara(Client client)  throws IOException {
         String nomCli = client.getNomClient().replace(" ", "_");
-        String fileName = "C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1\\encarrecs_albara_client_" + nomCli + "_" + System.currentTimeMillis() + ".txt";
+        // path on es guardarà els fitxers
+        String fileName = "C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1\\fitxers\\encarrecs_albara_client_" + nomCli + "_" + System.currentTimeMillis() + ".txt";
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            // bufferwritter per recollir les dades i que es guarden dins del fitxer
             writer.write("Nom del client: " + client.getNomClient());
             writer.newLine();
             writer.write("Telefon del client: " + client.getTelClient());
@@ -137,56 +143,147 @@ public class Botiga {
     }
 
     public static void generarFitxerCSV(Client client) throws IOException {
-        String nomCli = client.getNomClient().replace(" ", "_");
-        String fileName = "C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1\\encarrecs_csv_client_" + nomCli + "_" + System.currentTimeMillis() + ".csv";
-        
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
-            writer.write("Nom Client;Telèfon Client;Data Encarrec;Quantitat;Unitats;Article");
-            writer.newLine();
+    String nomCli = client.getNomClient().replace(" ", "_");
+    String fileName = "C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1\\fitxers\\encarrecs_csv_client_" + nomCli + "_" + System.currentTimeMillis() + ".csv";
+    
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+        // Escribir la cabecera del archivo CSV
+        writer.write("Nom Client;Telèfon Client;Data Encarrec;Quantitat;Unitats;Article");
+        writer.newLine();
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            writer.write(client.getNomClient() + ";" + client.getTelClient() + ";" + client.getDataEncarrec().format(formatter) + ";");
-        
-            for (Article article : client.getArticles()) {
-                writer.write(article.getNomArticle() + ";" + article.getQuantitat() + ";" + article.getUnitats() + ";");
-            }
-        
-            writer.newLine();
-            System.out.println("Fitxer CSV generat correctament.");
-        } catch (IOException e) {
-        System.out.println("Error al generar el fitxer CSV.");
+        // Formatear la fecha
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        // Escribir los artículos
+        for (Article article : client.getArticles()) {
+            writer.write(client.getNomClient() + ";" + 
+                         client.getTelClient() + ";" + 
+                         client.getDataEncarrec().format(formatter) + ";" +
+                         article.getQuantitat() + ";" + 
+                         article.getUnitats() + ";" + 
+                         article.getNomArticle() + ";");
+            writer.newLine(); // Añadir nueva línea después de cada artículo
         }
+
+        System.out.println("Fitxer CSV generat correctament.");
+    } catch (IOException e) {
+        System.out.println("Error al generar el fitxer CSV.");
+        e.printStackTrace(); // Es útil imprimir la traza de error para depuración
     }
+}
+
 
     public static void generarFitxerBinari(Client client, String dataEncarrec, ArrayList<Article> articles) throws IOException {
         String nomCli = client.getNomClient().replace(" ", "_");
-        String fileName = "C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1\\encarrecs_binari_client_" + nomCli + "_" + System.currentTimeMillis() + ".dat";
+        String fileName = "C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1\\fitxers\\encarrecs_binari_client_" + nomCli + "_" + System.currentTimeMillis() + ".dat";
         
-        try {
-            FileOutputStream fileStr1 = new FileOutputStream(fileName);
-            DataOutputStream str1 = new DataOutputStream(fileStr1); 
-			//se pasa el cliente la fecha y la lista
-            str1.writeUTF(client.getNomClient());
-            str1.writeUTF(dataEncarrec);
-            for(Article article : articles) {
-                str1.writeUTF(article.toString());
+       try (DataOutputStream str1 = new DataOutputStream(new FileOutputStream(fileName))) {
+        // Escribir la información del cliente
+        str1.writeUTF(client.getNomClient());
+        str1.writeInt(client.getTelClient());
+        str1.writeUTF(dataEncarrec);
+        
+        // Escribir el número de artículos
+        str1.writeInt(articles.size());
+
+        // Escribir cada artículo
+        for (Article article : articles) {
+            str1.writeUTF(article.getNomArticle());
+            str1.writeInt(article.getQuantitat());
+            str1.writeUTF(article.getUnitats());
             }
-            str1.close(); 
-            fileStr1.close();
         } catch (FileNotFoundException e) {
             System.out.println("Error al generar el fitxer binari.");
             e.printStackTrace();
         } catch (IOException e) {
+            System.out.println("Error al generar el fitxer binari: " + e.getMessage());
+        }
 
+    }
+
+    public static void mostrarEncarrecs(BufferedReader reader) throws IOException {
+        System.out.println("Com es vol obrir el fitxer?\n1. Fitxer de text CSV\n2. Fitxer binari");
+        String option = reader.readLine();
+        int opcio = Integer.parseInt(option);
+
+        // Pregunta la ruta del fitxer
+        System.out.println("Introdueix la ruta (path) del fitxer:");
+        String filePath = reader.readLine();
+
+        // Mostrar contingut en funció de l'opció escollida
+        switch (opcio) {
+            case 1:
+                mostrarEncarrecCSV(filePath);
+                break;
+            case 2:
+                mostrarEncarrecBinari(filePath);
+                break;
+            default:
+                System.out.println("Opció no vàlida. Si us plau, tria una opció correcta.");
+                break;
         }
     }
 
-    public static void mostrarEncarrecs() {
-        if (encarrecs.isEmpty()) {
-            System.out.println("No hi ha encàrrecs per mostrar.");
-        } else {
+    public static void mostrarEncarrecCSV(String filePath) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            // Llegeix la informació del client
+            String line = reader.readLine(); // Ignorar la capçalera
+            String[] dadesClient = reader.readLine().split(";");
+            String nomClient = dadesClient[0];
+            String telClient = dadesClient[1];
+            String dataEncarrec = dadesClient[2];
+
+            System.out.println("Nom del client: " + nomClient);
+            System.out.println("Telefon del client: " + telClient);
+            System.out.println("Data de l'encarrec: " + dataEncarrec);
+            System.out.println("Quantitat\tUnitats\t\tArticle");
+            System.out.println("=============== ========== ===============");
+
+            // Llegeix els articles
+            while ((line = reader.readLine()) != null) {
+            String[] datos = line.split(";");
+            if (datos.length >= 3) {
+                String quantitat = datos[3];
+                String unitats = datos[4];
+                String nomArticle = datos[5];
+
+                // Mostrar los artículos leídos
+                System.out.printf("%-15s %-10s %-15s%n", quantitat, unitats, nomArticle);
+            }
+        }
+        } catch (IOException e) {
+            System.out.println("Error al llegir el fitxer CSV.");
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void mostrarEncarrecBinari(String filePath) {
+    try (DataInputStream dis = new DataInputStream(new FileInputStream(filePath))) {
+        // Leer la información del cliente
+        String nomClient = dis.readUTF();
+        int telClient = dis.readInt();
+        String dataEncarrec = dis.readUTF();
+
+        System.out.println("Nom del client: " + nomClient);
+        System.out.println("Telefon del client: " + telClient);
+        System.out.println("Data de l'encarrec: " + dataEncarrec);
+        System.out.println();
+        System.out.println("Quantitat\tUnitats\t\tArticle");
+
+        // Leer el número de artículos
+        int numArticles = dis.readInt();
+        for (int i = 0; i < numArticles; i++) {
+            String nomArticle = dis.readUTF();
+            int quantitat = dis.readInt();
+            String unitats = dis.readUTF();
             
+            System.out.printf("%-15d %-10s %-15s%n", quantitat, unitats, nomArticle);
         }
+    } catch (IOException e) {
+        System.out.println("Error al llegir el fitxer binari: " + e.getMessage());
+        e.printStackTrace();
     }
+}
 
 }
