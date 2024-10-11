@@ -1,6 +1,9 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,20 +12,22 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class Botiga {
-    private static final ArrayList<Client> encarrecs = new ArrayList<>();
-    private static File dir = new File ("C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1");
+    private static ArrayList<Client> encarrecs = new ArrayList<>();
+    private static final File dir = new File ("C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1");
 
     public static void main(String[] args) throws Exception {
         
         boolean sortir = false;
 
         while (!sortir) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-                
-                System.out.println("Què vols fer?\n1. Generar un nou encàrrec\n2. Mostrar encàrrec\n3. Sortir");
-                int opcio = Integer.parseInt(reader.readLine());
+             System.out.println("Què vols fer?\n1. Generar un nou encàrrec\n2. Mostrar encàrrec\n3. Sortir");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            try{
+               
+                String oo = reader.readLine();
+                int opcio = Integer.parseInt(oo);
 
-            switch (opcio) {
+                switch (opcio) {
                     case 1: 
                         infoClient(reader);
                         break;
@@ -36,6 +41,8 @@ public class Botiga {
                         System.out.println("Opció no vàlida. Si us plau, tria una opció correcta.");
                         break;
                 }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -64,10 +71,10 @@ public class Botiga {
                 generarFitxerAlbara(nouClient);
                 break;
             case 2:
-                // generarFitxerCSV(nouClient);
+                generarFitxerCSV(nouClient);
                 break;
             case 3:
-                // generarFitxerBinari(nouClient);
+                generarFitxerBinari(nouClient, dataEncarrec, articles);
                 break;
             default:
                 System.out.println("Opció no vàlida. Si us plau, tria una opció correcta.");
@@ -87,7 +94,6 @@ public class Botiga {
             int quantitat = Integer.parseInt(reader.readLine());
             System.out.println("Introdueix les unitats:");
             String unitats = reader.readLine();
-            
             Article nouArticle = new Article(nomArticle, quantitat, unitats);
             articles.add(nouArticle);
 
@@ -101,9 +107,9 @@ public class Botiga {
     }
 
     public static void generarFitxerAlbara(Client client)  throws IOException {
-        File f1 = new File (dir, "albara.txt");
-        f1.createNewFile();
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(f1))) {
+        String nomCli = client.getNomClient().replace(" ", "_");
+        String fileName = "C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1\\encarrecs_albara_client_" + nomCli + "_" + System.currentTimeMillis() + ".txt";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             writer.write("Nom del client: " + client.getNomClient());
             writer.newLine();
             writer.write("Telefon del client: " + client.getTelClient());
@@ -127,7 +133,51 @@ public class Botiga {
             System.out.println("Albarà generat correctament.");
         } catch (IOException e) {
             System.out.println("Error al generar l'albarà.");
+        }
+    }
+
+    public static void generarFitxerCSV(Client client) throws IOException {
+        String nomCli = client.getNomClient().replace(" ", "_");
+        String fileName = "C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1\\encarrecs_csv_client_" + nomCli + "_" + System.currentTimeMillis() + ".csv";
+        
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            writer.write("Nom Client;Telèfon Client;Data Encarrec;Quantitat;Unitats;Article");
+            writer.newLine();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            writer.write(client.getNomClient() + ";" + client.getTelClient() + ";" + client.getDataEncarrec().format(formatter) + ";");
+        
+            for (Article article : client.getArticles()) {
+                writer.write(article.getNomArticle() + ";" + article.getQuantitat() + ";" + article.getUnitats() + ";");
+            }
+        
+            writer.newLine();
+            System.out.println("Fitxer CSV generat correctament.");
+        } catch (IOException e) {
+        System.out.println("Error al generar el fitxer CSV.");
+        }
+    }
+
+    public static void generarFitxerBinari(Client client, String dataEncarrec, ArrayList<Article> articles) throws IOException {
+        String nomCli = client.getNomClient().replace(" ", "_");
+        String fileName = "C:\\Users\\karolayn\\DAM\\M06\\Act1_UF1_Ra1\\encarrecs_binari_client_" + nomCli + "_" + System.currentTimeMillis() + ".dat";
+        
+        try {
+            FileOutputStream fileStr1 = new FileOutputStream(fileName);
+            DataOutputStream str1 = new DataOutputStream(fileStr1); 
+			//se pasa el cliente la fecha y la lista
+            str1.writeUTF(client.getNomClient());
+            str1.writeUTF(dataEncarrec);
+            for(Article article : articles) {
+                str1.writeUTF(article.toString());
+            }
+            str1.close(); 
+            fileStr1.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Error al generar el fitxer binari.");
             e.printStackTrace();
+        } catch (IOException e) {
+
         }
     }
 
@@ -135,9 +185,7 @@ public class Botiga {
         if (encarrecs.isEmpty()) {
             System.out.println("No hi ha encàrrecs per mostrar.");
         } else {
-            for (Client client : encarrecs) {
-                System.out.println(client.toString());
-            }
+            
         }
     }
 
